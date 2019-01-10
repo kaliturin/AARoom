@@ -1,10 +1,11 @@
-package com.example.anton.aaroom.ui.main.ormlite;
+package com.example.anton.aaroom.ui.main.cache.ormlite;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import com.example.anton.aaroom.ui.main.cache.CacheStorage;
 import com.j256.ormlite.android.apptools.OrmLiteSqliteOpenHelper;
 import com.j256.ormlite.dao.Dao;
 import com.j256.ormlite.support.ConnectionSource;
@@ -13,30 +14,56 @@ import com.j256.ormlite.table.TableUtils;
 import java.sql.SQLException;
 
 /**
- * OrmLite supported cache database
+ * OrmLite cache storage
  */
-public class CacheDatabase extends OrmLiteSqliteOpenHelper {
-
-    private static final String DATABASE_NAME = "model-cache.db";
-    private static final int DATABASE_VERSION = 1;
-
-    private static CacheDatabase INSTANCE;
+public class OrmLiteCacheStorage extends OrmLiteSqliteOpenHelper implements CacheStorage {
+    @Nullable
+    private static CacheStorage INSTANCE;
 
     private Dao<CacheEntry, String> cacheDao;
 
-    private CacheDatabase(Context context) {
-        super(context, DATABASE_NAME, null, DATABASE_VERSION);
+    private OrmLiteCacheStorage(Context context, String name) {
+        super(context, name, null, CacheEntry.VERSION);
     }
 
-    public static CacheDatabase instance(Context context) {
+    /**
+     * Returns the singleton instance of the storage, creating it if it is null
+     */
+    public static CacheStorage instance(Context context, String name) {
         if (INSTANCE == null) {
-            INSTANCE = new CacheDatabase(context.getApplicationContext());
+            synchronized (OrmLiteCacheStorage.class) {
+                if (INSTANCE == null) {
+                    INSTANCE = newInstance(context, name);
+                }
+            }
         }
         return INSTANCE;
     }
 
-    public static CacheDatabase instance() {
+    /**
+     * Returns the previously created singleton instance of the storage or null if
+     * {@link #instance(Context, String)} hasn't been called before
+     */
+    public static CacheStorage instance() {
         return INSTANCE;
+    }
+
+    /**
+     * Destroys the singleton instance of the storage
+     */
+    public static void destroyInstance() {
+        INSTANCE = null;
+    }
+
+    /**
+     * Creates the new instance of the cache storage.
+     * Normally, this method shouldn't be called more than 1 time with the same parameters.
+     * Else store the instance somewhere or use the singleton version
+     * {@link #instance(Context, String)}
+     */
+    @NonNull
+    public static CacheStorage newInstance(Context context, String name) {
+        return new OrmLiteCacheStorage(context.getApplicationContext(), name);
     }
 
     @Override
@@ -71,6 +98,22 @@ public class CacheDatabase extends OrmLiteSqliteOpenHelper {
         super.close();
     }
 
+    @Override
+    public void clear() {
+        try {
+            TableUtils.clearTable(getConnectionSource(), CacheEntry.class);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public void destroy(Context context) {
+        close();
+        context.deleteDatabase(getDatabaseName());
+    }
+
+    @Override
     @Nullable
     public <T> T select(@NonNull Object owner, @NonNull Object key) {
         CacheEntry entry;
@@ -82,28 +125,13 @@ public class CacheDatabase extends OrmLiteSqliteOpenHelper {
         return entry == null ? null : entry.getValue();
     }
 
+    @Override
     public <T> void upsert(@NonNull Object owner, @NonNull Object key, @NonNull T value) {
         CacheEntry entry = new CacheEntry(owner, key, value);
         try {
-            upsert(entry);
+            cacheDao().createOrUpdate(entry);
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    private void upsert(CacheEntry entity) throws SQLException {
-        cacheDao().createOrUpdate(entity);
-    }
-
-    public void clear() {
-        try {
-            TableUtils.clearTable(getConnectionSource(), CacheEntry.class);
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public void deleteDatabase(Context context) {
-        context.deleteDatabase(DATABASE_NAME);
     }
 }

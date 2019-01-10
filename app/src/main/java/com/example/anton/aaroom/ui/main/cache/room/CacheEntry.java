@@ -1,4 +1,4 @@
-package com.example.anton.aaroom.ui.main.room;
+package com.example.anton.aaroom.ui.main.cache.room;
 
 import android.arch.persistence.room.Entity;
 import android.arch.persistence.room.Ignore;
@@ -6,6 +6,8 @@ import android.arch.persistence.room.TypeConverter;
 import android.arch.persistence.room.TypeConverters;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+
+import com.example.anton.aaroom.ui.main.cache.CacheSerializer;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -15,6 +17,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 public class CacheEntry {
+    public static final int VERSION = 1;
 
     @NonNull
     public String owner = "";
@@ -28,7 +31,7 @@ public class CacheEntry {
         String _owner = owner.getClass().getCanonicalName();
         this.owner = _owner == null ? "" : _owner;
         this.key = key.toString();
-        this.value = Converter.toString(value);
+        this.value = CacheSerializer.serialize(value);
         this.clazz = value.getClass();
     }
 
@@ -36,7 +39,7 @@ public class CacheEntry {
     @Nullable
     public <T> T getValue() {
         Class<T> clazz = getClazz();
-        return clazz == null ? null : Converter.fromString(value, clazz);
+        return clazz == null ? null : CacheSerializer.deserialize(value, clazz);
     }
 
     @Ignore

@@ -1,4 +1,4 @@
-package com.example.anton.aaroom.ui.main.room;
+package com.example.anton.aaroom.ui.main.cache.room;
 
 import android.arch.persistence.room.Dao;
 import android.arch.persistence.room.Delete;

@@ -3,28 +3,29 @@ package com.example.anton.aaroom.ui.main;
 import android.arch.lifecycle.ViewModel;
 import android.content.Context;
 
-import com.example.anton.aaroom.ui.main.ormlite.CacheDatabase;
-//import com.example.anton.aaroom.ui.main.room.CacheDatabase;
+import com.example.anton.aaroom.ui.main.cache.CacheStorageManager;
 
 public class MainViewModel extends ViewModel {
 
-    public void initDatabase(Context context) {
-        CacheDatabase.instance(context);
+    public void init(Context context) {
+        CacheStorageManager.instance(context,
+                CacheStorageManager.ROOM, "model-cache.db");
     }
 
-    public void upsertItem(Object key, Item item) {
-        CacheDatabase.instance().upsert(this, key, item);
+    public void upsert(Object key, Item item) {
+        CacheStorageManager.instance().upsert(this, key, item);
     }
 
-    public Item selectItem(Object key) {
-        return CacheDatabase.instance().select(this, key);
+    public Item select(Object key) {
+        return CacheStorageManager.instance().select(this, key);
     }
 
-    public void clearItems() {
-        CacheDatabase.instance().clear();
+    public void clear() {
+        CacheStorageManager.instance().clear();
     }
 
-    public void deleteDatabase(Context context) {
-        CacheDatabase.instance().deleteDatabase(context);
+    public void destroy(Context context) {
+        CacheStorageManager.instance().destroy(context);
+        CacheStorageManager.destroyInstance();
     }
 }

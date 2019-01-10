@@ -1,9 +1,9 @@
-package com.example.anton.aaroom.ui.main.ormlite;
+package com.example.anton.aaroom.ui.main.cache.ormlite;
 
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
-import com.example.anton.aaroom.ui.main.room.Converter;
+import com.example.anton.aaroom.ui.main.cache.CacheSerializer;
 import com.j256.ormlite.field.DatabaseField;
 
 import lombok.Data;
@@ -13,6 +13,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Data
 public class CacheEntry {
+    public static final int VERSION = 1;
 
     @DatabaseField
     private String owner;
@@ -31,7 +32,7 @@ public class CacheEntry {
         String _owner = owner.getClass().getCanonicalName();
         this.owner = _owner == null ? "" : _owner;
         this.key = key.toString();
-        this.value = Converter.toString(value);
+        this.value = CacheSerializer.serialize(value);
         this.clazz = value.getClass().getCanonicalName();
         this.id = buildId(owner, key);
     }
@@ -39,7 +40,7 @@ public class CacheEntry {
     @Nullable
     public <T> T getValue() {
         Class<T> clazz = getClazz();
-        return clazz == null ? null : Converter.fromString(value, clazz);
+        return clazz == null ? null : CacheSerializer.deserialize(value, clazz);
     }
 
     @SuppressWarnings("unchecked")

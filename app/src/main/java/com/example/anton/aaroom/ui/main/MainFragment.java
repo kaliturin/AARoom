@@ -33,22 +33,22 @@ public class MainFragment extends Fragment {
 
         MainViewModel mViewModel = ViewModelProviders.of(this).get(MainViewModel.class);
 
-        mViewModel.initDatabase(getContext());
+        mViewModel.init(getContext());
 
         long started = SystemClock.elapsedRealtime();
 
-        mViewModel.upsertItem("1", new Item("John", "NY", 1));
-        mViewModel.upsertItem("2", new Item("Sam", "CA", 2));
-        mViewModel.upsertItem("3", new Item("Mike", "SPB", 3));
+        mViewModel.upsert("1", new Item("John", "NY", 1));
+        mViewModel.upsert("2", new Item("Sam", "CA", 2));
+        mViewModel.upsert("3", new Item("Mike", "SPB", 3));
 
-        Item item = mViewModel.selectItem("2222");
+        Item item = mViewModel.select("2");
 
         long finished = SystemClock.elapsedRealtime() - started;
 
         Timber.tag("TEST1").d(item == null ? "null" : item.toString());
         Timber.tag("TEST1").d("time = " + finished);
 
-        //mViewModel.clearItems();
-        //mViewModel.deleteDatabase(getContext());
+        mViewModel.clear();
+        mViewModel.destroy(getContext());
     }
 }
