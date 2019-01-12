@@ -31,24 +31,22 @@ public class MainFragment extends Fragment {
 
         binding.button.setOnClickListener(v -> PopupActivity_.intent(getContext()).start());
 
-        MainViewModel mViewModel = ViewModelProviders.of(this).get(MainViewModel.class);
-
-        mViewModel.init(getContext());
+        MainViewModel viewModel = ViewModelProviders.of(this).get(MainViewModel.class);
 
         long started = SystemClock.elapsedRealtime();
 
-        mViewModel.upsert("1", new Item("John", "NY", 1));
-        mViewModel.upsert("2", new Item("Sam", "CA", 2));
-        mViewModel.upsert("3", new Item("Mike", "SPB", 3));
+        viewModel.setValue("1", new Item("John", "NY", 1));
+        viewModel.setValue("2", new Item("Sam", "CA", 2));
+        viewModel.setValue("3", new Item("Mike", "SPB", 3));
 
-        Item item = mViewModel.select("2");
+        Item item = viewModel.getValue("2");
 
         long finished = SystemClock.elapsedRealtime() - started;
 
         Timber.tag("TEST1").d(item == null ? "null" : item.toString());
         Timber.tag("TEST1").d("time = " + finished);
 
-        mViewModel.clear();
-        mViewModel.destroy(getContext());
+        //viewModel.deleteAll();
+        //viewModel.destroy();
     }
 }

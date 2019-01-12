@@ -7,88 +7,98 @@ import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import com.example.anton.aaroom.ui.main.cache.CacheEntry;
+import com.example.anton.aaroom.ui.main.cache.CacheSerializer;
 import com.example.anton.aaroom.ui.main.cache.CacheStorage;
+
+import lombok.Getter;
+import lombok.Setter;
+
+import timber.log.Timber;
 
 /**
  * Room cache storage
  */
-@Database(entities = {CacheEntry.class}, version = 1, exportSchema = false)
+@Database(entities = {RoomCacheEntry.class}, version = 1, exportSchema = false)
 public abstract class RoomCacheStorage extends RoomDatabase implements CacheStorage {
-    @Nullable
-    private static CacheStorage INSTANCE;
 
+    // The storage type identifier
+    public static final int TYPE = 2;
+
+    // The storage name
     private String name;
+
+    // Default cache entry fields serializer
+    @Getter
+    @Setter
+    private CacheSerializer serializer = new CacheSerializer();
 
     public abstract CacheDao cacheDao();
 
     /**
-     * Returns the singleton instance of the storage, creating it if it is null
-     */
-    public static CacheStorage instance(Context context, String name) {
-        if (INSTANCE == null) {
-            synchronized (RoomCacheStorage.class) {
-                if (INSTANCE == null) {
-                    INSTANCE = newInstance(context, name);
-                }
-            }
-        }
-        return INSTANCE;
-    }
-
-    /**
-     * Returns the previously created singleton instance of the storage or null if
-     * {@link #instance(Context, String)} hasn't been called before
-     */
-    public static CacheStorage instance() {
-        return INSTANCE;
-    }
-
-    /**
-     * Destroys the singleton instance of the storage
-     */
-    public static void destroyInstance() {
-        INSTANCE = null;
-    }
-
-    /**
      * Creates the new instance of the cache storage.
      * Normally, this method shouldn't be called more than 1 time with the same parameters.
-     * Else store the instance somewhere or use the singleton version
-     * {@link #instance(Context, String)}
      */
     @NonNull
     public static CacheStorage newInstance(Context context, String name) {
         RoomCacheStorage storage = Room.databaseBuilder(context.getApplicationContext(),
                 RoomCacheStorage.class, name)
                 // allow queries on the main thread.
-                // TODO: Don't do this on a real app! See PersistenceBasicSample for an example.
-                .allowMainThreadQueries()
+                // Don't do this on a real app! See PersistenceBasicSample for an example.
+                //.allowMainThreadQueries()
                 .build();
         storage.name = name;
         return storage;
     }
 
     @Override
-    public void clear() {
+    public int getType() {
+        return 2;
+    }
+
+    @Override
+    public void deleteAll() {
         cacheDao().deleteAll();
     }
 
     @Override
+    public void deleteBy(Object owner, String tag) {
+        String _owner = serializer.serializeOwner(owner, "");
+        cacheDao().deleteBy(_owner, tag);
+    }
+
+    @Override
+    public void delete(CacheEntry entry) {
+        RoomCacheEntry _entry = new RoomCacheEntry(entry);
+        cacheDao().delete(_entry);
+    }
+
+    @Override
     public void destroy(Context context) {
+        Timber.d("Destroying persistent cache: " + name);
+        close();
         context.deleteDatabase(name);
     }
 
     @Override
-    @Nullable
-    public <T> T select(@NonNull Object owner, @NonNull Object key) {
-        String _owner = owner.getClass().getCanonicalName();
-        CacheEntry entry = cacheDao().select(_owner == null ? "" : _owner, key.toString());
-        return entry == null ? null : entry.getValue();
+    public void setEntry(@NonNull CacheEntry entry) {
+        RoomCacheEntry _entry = new RoomCacheEntry(entry);
+        if (cacheDao().insert(_entry) == -1) {
+            cacheDao().update(_entry);
+        }
     }
 
     @Override
-    public <T> void upsert(@NonNull Object owner, @NonNull Object key, @NonNull T value) {
-        CacheEntry entry = new CacheEntry(owner, key, value);
+    @Nullable
+    public CacheEntry getEntry(Object owner, Object key) {
+        String _owner = serializer.serializeOwner(owner, "");
+        String _key = serializer.serializeKey(key, "");
+        return cacheDao().select(_owner, _key);
+    }
+
+    @Override
+    public <T> void setValue(Object owner, Object key, T value, long time, String tag) {
+        RoomCacheEntry entry = new RoomCacheEntry(serializer, owner, key, value, time, tag);
         if (cacheDao().insert(entry) == -1) {
             cacheDao().update(entry);
         }

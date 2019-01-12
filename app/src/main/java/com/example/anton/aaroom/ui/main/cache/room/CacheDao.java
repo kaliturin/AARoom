@@ -10,18 +10,21 @@ import android.arch.persistence.room.Update;
 @Dao
 public interface CacheDao {
 
-    @Query("SELECT * FROM CacheEntry WHERE `owner` IS :owner AND `key` IS :key")
-    CacheEntry select(String owner, String key);
+    @Query("SELECT * FROM RoomCacheEntry WHERE `owner` IS :owner AND `key` IS :key")
+    RoomCacheEntry select(String owner, String key);
 
     @Delete
-    void delete(CacheEntry entry);
+    void delete(RoomCacheEntry entry);
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    long insert(CacheEntry entity);
+    long insert(RoomCacheEntry entity);
 
     @Update(onConflict = OnConflictStrategy.IGNORE)
-    void update(CacheEntry entity);
+    void update(RoomCacheEntry entity);
 
-    @Query("DELETE FROM CacheEntry")
+    @Query("DELETE FROM RoomCacheEntry")
     void deleteAll();
+
+    @Query("DELETE FROM RoomCacheEntry WHERE 'owner' IS :owner AND 'tag' IS :tag")
+    void deleteBy(String owner, String tag);
 }

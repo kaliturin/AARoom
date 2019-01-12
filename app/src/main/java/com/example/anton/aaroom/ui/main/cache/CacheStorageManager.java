@@ -2,97 +2,103 @@ package com.example.anton.aaroom.ui.main.cache;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 
 import com.example.anton.aaroom.ui.main.cache.ormlite.OrmLiteCacheStorage;
 import com.example.anton.aaroom.ui.main.cache.room.RoomCacheStorage;
+
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Persistent cache storage manager
  */
 public class CacheStorageManager {
-    public static final int ORM_LITE = 1;
-    public static final int ROOM = 2;
-    private static int lastType = ORM_LITE;
+
+    // The storage ORM types
+    public static final int ORM_LITE = OrmLiteCacheStorage.TYPE;
+    public static final int ROOM = RoomCacheStorage.TYPE;
+
+    private static final Map<String, CacheStorage> map = new ConcurrentHashMap<>();
+
+//    /**
+//     * Returns the singleton instance of the storage with the default type, creating it if it doesn't exist
+//     */
+//    public static CacheStorage instance(String name) {
+//        return instance(Config.CACHE_MODELS_TYPE, name);
+//    }
+
+//    /**
+//     * Returns the singleton instance of the storage with the default type, creating it if it doesn't exist
+//     */
+//    public static CacheStorage instance(int type, String name) {
+//        return instance(App_.getInstance(), type, name);
+//    }
 
     /**
-     * Returns the singleton instance of the storage with the defined type, creating it if it is null
+     * Returns the singleton instance of the storage with the defined type, creating it if it doesn't exist
      */
     @NonNull
     public static CacheStorage instance(Context context, int type, String name) {
-        lastType = type;
-        switch (type) {
-            case ORM_LITE:
-                return OrmLiteCacheStorage.instance(context, name);
-            case ROOM:
-                return RoomCacheStorage.instance(context, name);
-            default:
-                throw new IllegalArgumentException("Unknown persistent cache storage type = " + type);
+        // find storage in the map and create it if not found
+        CacheStorage cache = map.get(name);
+        if (cache == null) {
+            synchronized (CacheStorageManager.class) {
+                cache = map.get(name);
+                if (cache == null) {
+                    cache = newInstance(context, type, name);
+                    map.put(name, cache);
+                    return cache;
+                }
+            }
+        }
+
+        // check the type of the found storage
+        if (cache.getType() != type) {
+            throw new IllegalArgumentException(String.format("Persistent cache storage with " +
+                    "name = %s has been already created with the different type = %d", name, type));
+        }
+
+        return cache;
+    }
+
+    /**
+     * Closes the storage and removes it's singleton instance from the manager's map
+     */
+    public static void close(String name) {
+        synchronized (CacheStorageManager.class) {
+            CacheStorage cache = map.remove(name);
+            if (cache != null) {
+                cache.close();
+            }
         }
     }
 
     /**
-     * Returns the previously created singleton instance of the storage with the defined type or
-     * null if {@link #instance(Context, int, String)} hasn't been called before
+     * Destroys the storage (removing it's files if there are some)
      */
-    @Nullable
-    public static CacheStorage instance(int type) {
-        lastType = type;
-        switch (type) {
-            case ORM_LITE:
-                return OrmLiteCacheStorage.instance();
-            case ROOM:
-                return RoomCacheStorage.instance();
-            default:
-                throw new IllegalArgumentException("Unknown persistent cache storage type = " + type);
+    public static void destroy(Context context, String name) {
+        synchronized (CacheStorageManager.class) {
+            CacheStorage cache = map.remove(name);
+            if (cache != null) {
+                cache.destroy(context);
+            }
         }
-    }
-
-    /**
-     * Returns the previously created singleton instance of the storage with the last used type or
-     * null if {@link #instance(Context, int, String)} hasn't been called before
-     */
-    public static CacheStorage instance() {
-        return instance(lastType);
-    }
-
-    /**
-     * Destroys the singleton instance of the storage with the defined type
-     */
-    public static void destroyInstance(int type) {
-        lastType = type;
-        switch (type) {
-            case ORM_LITE:
-                OrmLiteCacheStorage.destroyInstance();
-            case ROOM:
-                RoomCacheStorage.destroyInstance();
-            default:
-                throw new IllegalArgumentException("Unknown persistent cache storage type = " + type);
-        }
-    }
-
-    /**
-     * Destroys the singleton instance of the storage with the last used type
-     */
-    public static void destroyInstance() {
-        destroyInstance(lastType);
     }
 
     /**
      * Returns the new created instance of the cache storage.
      * Normally, this method shouldn't be called more than 1 time with the same parameters.
-     * Else you probably should store the instance somewhere or use the singleton version
-     * {@link #instance(Context, int, String)}
      */
     @NonNull
-    public static CacheStorage newInstance(Context context, int type, String name) {
+    private static CacheStorage newInstance(Context context, int type, String name) {
         switch (type) {
             case ORM_LITE:
                 return OrmLiteCacheStorage.newInstance(context, name);
             case ROOM:
                 return RoomCacheStorage.newInstance(context, name);
             default:
-                throw new IllegalArgumentException("Unknown persistent cache storage type = " + type);
+                throw new IllegalArgumentException(String.format("Unknown persistent " +
+                        "cache storage with name = %s, type = %d", name, type));
         }
     }
 }

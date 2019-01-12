@@ -1,31 +1,34 @@
 package com.example.anton.aaroom.ui.main;
 
+import android.app.Application;
 import android.arch.lifecycle.ViewModel;
 import android.content.Context;
 
+import com.example.anton.aaroom.Config;
+import com.example.anton.aaroom.ui.main.cache.CacheStorage;
 import com.example.anton.aaroom.ui.main.cache.CacheStorageManager;
 
 public class MainViewModel extends ViewModel {
 
+    private CacheStorage cache;
+
     public void init(Context context) {
-        CacheStorageManager.instance(context,
-                CacheStorageManager.ROOM, "model-cache.db");
+        cache = CacheStorageManager.instance(context, Config.CACHE_MODELS_TYPE, Config.CACHE_MODELS_NAME);
     }
 
-    public void upsert(Object key, Item item) {
-        CacheStorageManager.instance().upsert(this, key, item);
+    public void setValue(Object key, Item item) {
+        cache.setValue(this, key, item);
     }
 
-    public Item select(Object key) {
-        return CacheStorageManager.instance().select(this, key);
+    public Item getValue(Object key) {
+        return cache.getValue(this, key);
     }
 
-    public void clear() {
-        CacheStorageManager.instance().clear();
+    public void deleteAll() {
+        cache.deleteAll();
     }
 
     public void destroy(Context context) {
-        CacheStorageManager.instance().destroy(context);
-        CacheStorageManager.destroyInstance();
+        CacheStorageManager.destroy(context, Config.CACHE_MODELS_NAME);
     }
 }
