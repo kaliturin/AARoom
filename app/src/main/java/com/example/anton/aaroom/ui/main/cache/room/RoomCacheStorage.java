@@ -1,6 +1,8 @@
 package com.example.anton.aaroom.ui.main.cache.room;
 
+import android.arch.persistence.db.SupportSQLiteDatabase;
 import android.arch.persistence.room.Database;
+import android.arch.persistence.room.DatabaseConfiguration;
 import android.arch.persistence.room.Room;
 import android.arch.persistence.room.RoomDatabase;
 import android.content.Context;
@@ -13,7 +15,6 @@ import com.example.anton.aaroom.ui.main.cache.CacheStorage;
 
 import lombok.Getter;
 import lombok.Setter;
-
 import timber.log.Timber;
 
 /**
@@ -64,12 +65,14 @@ public abstract class RoomCacheStorage extends RoomDatabase implements CacheStor
     @Override
     public void deleteAll() {
         cacheDao().deleteAll();
+        vacuum();
     }
 
     @Override
     public void deleteBy(Object owner, String tag) {
         String _owner = serializer.serializeOwner(owner, "");
         cacheDao().deleteBy(_owner, tag);
+        vacuum();
     }
 
     @Override
@@ -107,5 +110,19 @@ public abstract class RoomCacheStorage extends RoomDatabase implements CacheStor
         if (cacheDao().insert(entry) == -1) {
             cacheDao().update(entry);
         }
+    }
+
+    public void vacuum() {
+        final SupportSQLiteDatabase _db = super.getOpenHelper().getWritableDatabase();
+        if (!_db.inTransaction()) {
+            _db.execSQL("VACUUM");
+        }
+    }
+
+    @Override
+    public void init(@NonNull DatabaseConfiguration configuration) {
+        super.init(configuration);
+        final SupportSQLiteDatabase _db = super.getOpenHelper().getWritableDatabase();
+        _db.execSQL("PRAGMA auto_vacuum = FULL;");
     }
 }

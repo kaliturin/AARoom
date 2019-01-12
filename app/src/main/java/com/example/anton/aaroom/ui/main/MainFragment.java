@@ -7,7 +7,6 @@ import android.support.v4.app.Fragment;
 import com.example.anton.aaroom.R;
 import com.example.anton.aaroom.databinding.MainFragmentBinding;
 import com.example.anton.aaroom.ui.PopupActivity_;
-import com.example.anton.aaroom.ui.main.cache.CacheEntry;
 
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.BindingObject;
@@ -36,21 +35,26 @@ public class MainFragment extends Fragment {
 
         long started = SystemClock.elapsedRealtime();
 
-        viewModel.setValue("1", new Item("John", "NY", 1), "1");
-        viewModel.setValue("2", new Item("Sam", "CA", 2), "1");
+        int i = 0;
+        viewModel.setValue("" + ++i, new Item("John", "NY", i), "1");
+        viewModel.setValue("" + ++i, new Item("Sam", "CA", i), "1");
 
-        for (int i = 3; i <= 5000; i++) {
-            viewModel.setValue("" + i, new Item("Mike", "SPB", i), "2");
+        while (i<2000) {
+            viewModel.setValue("" + ++i, new Item("Tony", "SPB", i), "2");
         }
 
-//        CacheEntry entry = viewModel.getEntry("222");
-//        if (entry != null) {
-//            viewModel.deleteEntry(entry);
-//        }
+        while (i<4000) {
+            viewModel.setValue("" + ++i, new Item("Mike", "MSK", i), "3");
+        }
 
         viewModel.deleteBy("2");
 
-        Item item = viewModel.getValue("222");
+        Item item = viewModel.getValue("2222");
+        Timber.tag("TEST1").d(item == null ? "null" : item.toString());
+
+        viewModel.deleteBy("3");
+
+        item = viewModel.getValue("2222");
 
         long finished = SystemClock.elapsedRealtime() - started;
 
