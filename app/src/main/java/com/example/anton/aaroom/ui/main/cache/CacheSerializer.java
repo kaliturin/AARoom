@@ -17,22 +17,11 @@ import com.example.anton.aaroom.ui.main.JsonUtils;
  * cacheStorage.getEntry(this, "my_key");
  * </i></pre>
  * <p>
- * If you want to use another way
- * of serialization - just override <i>serializeOwner</i> method. For example if you want to use
- * <i>Strings</i> as <i>owner</i> instead of <i>this</i> - just do like that:
- * <p>
- * <pre><i>
- * cacheStorage.setSerializer(new CacheSerializer() {
- *  public String serializeOwner(Object owner, String onNull) {
- *      return owner == null ? onNull : owner.toString();
- *  }
- * });
- * </i></pre>
- * <p>
- * Then you can do like that:
+ * Also you can do like that:
  * <pre><i>
  * cacheStorage.getEntry("my_owner", "my_key");
  * </i></pre>
+ * In that way string "my_owner" will be used without additional serialization.
  */
 public class CacheSerializer {
 
@@ -65,6 +54,11 @@ public class CacheSerializer {
 
     @Nullable
     public String serializeOwner(Object owner, String onNull) {
+        // use strings as is
+        if (owner instanceof String) {
+            return (String) owner;
+        }
+        // serialize the other types as class name
         String s = owner == null ? null : owner.getClass().getCanonicalName();
         // getCanonicalName is nullable!
         return s == null ? onNull : s;

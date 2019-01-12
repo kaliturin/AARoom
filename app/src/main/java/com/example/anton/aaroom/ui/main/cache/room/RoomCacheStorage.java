@@ -45,10 +45,15 @@ public abstract class RoomCacheStorage extends RoomDatabase implements CacheStor
                 RoomCacheStorage.class, name)
                 // allow queries on the main thread.
                 // Don't do this on a real app! See PersistenceBasicSample for an example.
-                //.allowMainThreadQueries()
+                .allowMainThreadQueries()
                 .build();
         storage.name = name;
         return storage;
+    }
+
+    @Override
+    public void close() {
+        super.close();
     }
 
     @Override

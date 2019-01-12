@@ -37,16 +37,19 @@ public class MainFragment extends Fragment {
 
         viewModel.setValue("1", new Item("John", "NY", 1));
         viewModel.setValue("2", new Item("Sam", "CA", 2));
-        viewModel.setValue("3", new Item("Mike", "SPB", 3));
 
-        Item item = viewModel.getValue("2");
+        for (int i = 3; i <= 5000; i++) {
+            viewModel.setValue("" + i, new Item("Mike", "SPB", i));
+        }
+
+        Item item = viewModel.getValue("222");
 
         long finished = SystemClock.elapsedRealtime() - started;
 
         Timber.tag("TEST1").d(item == null ? "null" : item.toString());
         Timber.tag("TEST1").d("time = " + finished);
 
-        //viewModel.deleteAll();
-        //viewModel.destroy();
+        viewModel.deleteAll();
+        viewModel.destroy();
     }
 }

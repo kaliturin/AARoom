@@ -3,6 +3,8 @@ package com.example.anton.aaroom.ui.main.cache;
 import android.content.Context;
 import android.support.annotation.NonNull;
 
+import com.example.anton.aaroom.App_;
+import com.example.anton.aaroom.Config;
 import com.example.anton.aaroom.ui.main.cache.ormlite.OrmLiteCacheStorage;
 import com.example.anton.aaroom.ui.main.cache.room.RoomCacheStorage;
 
@@ -20,19 +22,19 @@ public class CacheStorageManager {
 
     private static final Map<String, CacheStorage> map = new ConcurrentHashMap<>();
 
-//    /**
-//     * Returns the singleton instance of the storage with the default type, creating it if it doesn't exist
-//     */
-//    public static CacheStorage instance(String name) {
-//        return instance(Config.CACHE_MODELS_TYPE, name);
-//    }
+    /**
+     * Returns the singleton instance of the storage with the default type, creating it if it doesn't exist
+     */
+    public static CacheStorage instance(String name) {
+        return instance(Config.CACHE_MODELS_TYPE, name);
+    }
 
-//    /**
-//     * Returns the singleton instance of the storage with the default type, creating it if it doesn't exist
-//     */
-//    public static CacheStorage instance(int type, String name) {
-//        return instance(App_.getInstance(), type, name);
-//    }
+    /**
+     * Returns the singleton instance of the storage with the default type, creating it if it doesn't exist
+     */
+    public static CacheStorage instance(int type, String name) {
+        return instance(App_.getInstance(), type, name);
+    }
 
     /**
      * Returns the singleton instance of the storage with the defined type, creating it if it doesn't exist
@@ -76,11 +78,11 @@ public class CacheStorageManager {
     /**
      * Destroys the storage (removing it's files if there are some)
      */
-    public static void destroy(Context context, String name) {
+    public static void destroy(String name) {
         synchronized (CacheStorageManager.class) {
             CacheStorage cache = map.remove(name);
             if (cache != null) {
-                cache.destroy(context);
+                cache.destroy(App_.getInstance());
             }
         }
     }
