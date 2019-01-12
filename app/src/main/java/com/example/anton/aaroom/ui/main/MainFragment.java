@@ -48,6 +48,8 @@ public class MainFragment extends Fragment {
 //            viewModel.deleteEntry(entry);
 //        }
 
+        viewModel.deleteBy("2");
+
         Item item = viewModel.getValue("222");
 
         long finished = SystemClock.elapsedRealtime() - started;
@@ -55,7 +57,7 @@ public class MainFragment extends Fragment {
         Timber.tag("TEST1").d(item == null ? "null" : item.toString());
         Timber.tag("TEST1").d("time = " + finished);
 
-        viewModel.deleteAll();
-        viewModel.destroy();
+//        viewModel.deleteAll();
+//        viewModel.destroy();
     }
 }

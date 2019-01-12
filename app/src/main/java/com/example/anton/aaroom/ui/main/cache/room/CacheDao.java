@@ -25,6 +25,6 @@ public interface CacheDao {
     @Query("DELETE FROM RoomCacheEntry")
     void deleteAll();
 
-    @Query("DELETE FROM RoomCacheEntry WHERE 'owner' IS :owner AND 'tag' IS :tag")
+    @Query("DELETE FROM RoomCacheEntry WHERE `owner` IS :owner AND `tag` IS :tag")
     void deleteBy(String owner, String tag);
 }
