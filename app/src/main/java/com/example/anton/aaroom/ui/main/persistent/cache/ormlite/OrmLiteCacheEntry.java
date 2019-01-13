@@ -1,15 +1,14 @@
-package com.example.anton.aaroom.ui.main.cache.ormlite;
+package com.example.anton.aaroom.ui.main.persistent.cache.ormlite;
 
 import android.support.annotation.NonNull;
 
-import com.example.anton.aaroom.ui.main.cache.CacheEntry;
-import com.example.anton.aaroom.ui.main.cache.CacheSerializer;
+import com.example.anton.aaroom.ui.main.persistent.cache.CacheEntry;
+import com.example.anton.aaroom.ui.main.persistent.cache.CacheSerializer;
 import com.j256.ormlite.field.DatabaseField;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-
 
 @SuppressWarnings("WeakerAccess")
 @Data

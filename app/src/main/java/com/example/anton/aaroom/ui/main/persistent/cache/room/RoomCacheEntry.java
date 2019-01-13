@@ -1,11 +1,11 @@
-package com.example.anton.aaroom.ui.main.cache.room;
+package com.example.anton.aaroom.ui.main.persistent.cache.room;
 
 import android.arch.persistence.room.Entity;
 import android.arch.persistence.room.Ignore;
 import android.support.annotation.NonNull;
 
-import com.example.anton.aaroom.ui.main.cache.CacheEntry;
-import com.example.anton.aaroom.ui.main.cache.CacheSerializer;
+import com.example.anton.aaroom.ui.main.persistent.cache.CacheEntry;
+import com.example.anton.aaroom.ui.main.persistent.cache.CacheSerializer;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;

@@ -1,4 +1,4 @@
-package com.example.anton.aaroom.ui.main.cache;
+package com.example.anton.aaroom.ui.main.persistent.cache;
 
 import android.support.annotation.Nullable;
 

@@ -1,8 +1,10 @@
-package com.example.anton.aaroom.ui.main.cache;
+package com.example.anton.aaroom.ui.main.persistent.cache;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+
+import java.util.List;
 
 /**
  * Persistent cache storage methods
@@ -32,10 +34,33 @@ public interface CacheStorage {
     /**
      * Deletes the all cache entries by owner and tag
      *
-     * @param owner the owner of the cache entry - usually "this" object
-     * @param tag   the additional tag-id of the cache entry
+     * @param owner the owner of the cache entry - usually "this" object or just a string
+     * @param tag   the additional id of the cache entry
      */
-    void deleteBy(Object owner, String tag);
+    void deleteByOwnerAndTag(Object owner, String tag);
+
+    /**
+     * Deletes the all cache entries of the owner with defined tag and keys not in the passed list
+     *
+     * @param owner the owner of the cache entry - usually "this" object or just a string
+     * @param tag   the additional id of the cache entry
+     * @param keys  the list of the keys
+     */
+    void deleteByOwnerAndTagAndKeyNotIn(Object owner, String tag, List<Object> keys);
+
+    /**
+     * Deletes the all cache entries by owner
+     *
+     * @param owner the owner of the cache entry - usually "this" object or just a string
+     */
+    void deleteByOwner(Object owner);
+
+    /**
+     * Deletes the all cache entries by tag
+     *
+     * @param tag the additional id of the cache entry
+     */
+    void deleteByTag(String tag);
 
     /**
      * Deletes the entry from the storage
@@ -60,7 +85,7 @@ public interface CacheStorage {
     /**
      * Finds the cache entry by its owner and key
      *
-     * @param owner the owner of the cache entry - usually "this" object
+     * @param owner the owner of the cache entry - usually "this" object or just a string
      * @param key   the unique id of the cache entry - must have toString overridden in way of
      *              returning the unique string
      */
@@ -70,23 +95,23 @@ public interface CacheStorage {
     /**
      * Inserts or updates the cache entry.
      *
-     * @param owner the owner of the cache entry - usually "this" object
+     * @param owner the owner of the cache entry - usually "this" object or just a string
      * @param key   the unique id of the cache entry - must have toString overridden in way of
      *              returning the unique string
      * @param value the actual cache value
      * @param time  the actual creation time of the cache value
-     * @param tag   the additional tag-id of the cache entry
+     * @param tag   the additional id of the cache entry
      */
     <T> void setValue(Object owner, Object key, T value, long time, String tag);
 
     /**
      * Inserts or updates the cache entry
      *
-     * @param owner the owner of the cache entry - usually "this" object
+     * @param owner the owner of the cache entry - usually "this" object or just a string
      * @param key   the unique id of the cache entry - must have toString overridden in way of
      *              returning the unique string
      * @param value the actual cache value
-     * @param tag   the additional info tag of the cache entry
+     * @param tag   the additional id of the cache entry
      */
     default <T> void setValue(Object owner, Object key, T value, String tag) {
         setValue(owner, key, value, System.currentTimeMillis(), tag);
@@ -95,19 +120,19 @@ public interface CacheStorage {
     /**
      * Inserts or updates the cache entry
      *
-     * @param owner the owner of the cache entry - usually "this" object
+     * @param owner the owner of the cache entry - usually "this" object or just a string
      * @param key   the unique id of the cache entry - must have toString overridden in way of
      *              returning the unique string
      * @param value the actual cache value
      */
     default <T> void setValue(Object owner, Object key, T value) {
-        setValue(owner, key, value, null);
+        setValue(owner, key, value, System.currentTimeMillis(), null);
     }
 
     /**
      * Returns the deserialized value of the cache entry found by its owner and key
      *
-     * @param owner the owner of the cache entry - usually "this" object
+     * @param owner the owner of the cache entry - usually "this" object or just a string
      * @param key   the unique id of the cache entry - must have toString overridden in way of
      *              returning the unique string
      */

@@ -1,15 +1,16 @@
-package com.example.anton.aaroom.ui.main.cache;
+package com.example.anton.aaroom.ui.main.persistent.cache;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
 
 import com.example.anton.aaroom.App_;
 import com.example.anton.aaroom.Config;
-import com.example.anton.aaroom.ui.main.cache.ormlite.OrmLiteCacheStorage;
-import com.example.anton.aaroom.ui.main.cache.room.RoomCacheStorage;
+import com.example.anton.aaroom.ui.main.persistent.cache.ormlite.OrmLiteCacheStorage;
+import com.example.anton.aaroom.ui.main.persistent.cache.room.RoomCacheStorage;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+
 
 /**
  * Persistent cache storage manager
@@ -26,14 +27,15 @@ public class CacheStorageManager {
      * Returns the singleton instance of the storage with the default type, creating it if it doesn't exist
      */
     public static CacheStorage instance(String name) {
-        return instance(Config.CACHE_MODELS_TYPE, name);
+        return instance(App_.getInstance(), name);
     }
 
     /**
      * Returns the singleton instance of the storage with the default type, creating it if it doesn't exist
      */
-    public static CacheStorage instance(int type, String name) {
-        return instance(App_.getInstance(), type, name);
+    @NonNull
+    public static CacheStorage instance(Context context, String name) {
+        return instance(context, Config.CACHE_MODELS_TYPE, name);
     }
 
     /**

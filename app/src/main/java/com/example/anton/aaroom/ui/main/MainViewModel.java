@@ -3,9 +3,9 @@ package com.example.anton.aaroom.ui.main;
 import android.arch.lifecycle.ViewModel;
 
 import com.example.anton.aaroom.Config;
-import com.example.anton.aaroom.ui.main.cache.CacheEntry;
-import com.example.anton.aaroom.ui.main.cache.CacheStorage;
-import com.example.anton.aaroom.ui.main.cache.CacheStorageManager;
+import com.example.anton.aaroom.ui.main.persistent.cache.CacheEntry;
+import com.example.anton.aaroom.ui.main.persistent.cache.CacheStorage;
+import com.example.anton.aaroom.ui.main.persistent.cache.CacheStorageManager;
 
 public class MainViewModel extends ViewModel {
 
@@ -24,7 +24,7 @@ public class MainViewModel extends ViewModel {
     }
 
     public void deleteBy(String tag) {
-        cache.deleteBy(this, tag);
+        cache.deleteByOwnerAndTag(this, tag);
     }
 
     public void destroy() {

@@ -1,6 +1,6 @@
 package com.example.anton.aaroom;
 
-import com.example.anton.aaroom.ui.main.cache.CacheStorageManager;
+import com.example.anton.aaroom.ui.main.persistent.cache.CacheStorageManager;
 
 public class Config {
 

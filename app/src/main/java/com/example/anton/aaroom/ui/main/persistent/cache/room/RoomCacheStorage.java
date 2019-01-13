@@ -1,4 +1,4 @@
-package com.example.anton.aaroom.ui.main.cache.room;
+package com.example.anton.aaroom.ui.main.persistent.cache.room;
 
 import android.arch.persistence.db.SupportSQLiteDatabase;
 import android.arch.persistence.room.Database;
@@ -9,9 +9,12 @@ import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
-import com.example.anton.aaroom.ui.main.cache.CacheEntry;
-import com.example.anton.aaroom.ui.main.cache.CacheSerializer;
-import com.example.anton.aaroom.ui.main.cache.CacheStorage;
+import com.example.anton.aaroom.ui.main.persistent.cache.CacheEntry;
+import com.example.anton.aaroom.ui.main.persistent.cache.CacheSerializer;
+import com.example.anton.aaroom.ui.main.persistent.cache.CacheStorage;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -45,11 +48,25 @@ public abstract class RoomCacheStorage extends RoomDatabase implements CacheStor
         RoomCacheStorage storage = Room.databaseBuilder(context.getApplicationContext(),
                 RoomCacheStorage.class, name)
                 // allow queries on the main thread.
-                // Don't do this on a real app! See PersistenceBasicSample for an example.
+                // TODO: Don't do this on a real app! See PersistenceBasicSample for an example.
                 .allowMainThreadQueries()
                 .build();
         storage.name = name;
         return storage;
+    }
+
+    @Override
+    public void init(@NonNull DatabaseConfiguration configuration) {
+        super.init(configuration);
+        final SupportSQLiteDatabase _db = super.getOpenHelper().getWritableDatabase();
+        _db.execSQL("PRAGMA auto_vacuum = FULL;");
+    }
+
+    public void vacuum() {
+        final SupportSQLiteDatabase _db = super.getOpenHelper().getWritableDatabase();
+        if (!_db.inTransaction()) {
+            _db.execSQL("VACUUM");
+        }
     }
 
     @Override
@@ -69,9 +86,33 @@ public abstract class RoomCacheStorage extends RoomDatabase implements CacheStor
     }
 
     @Override
-    public void deleteBy(Object owner, String tag) {
+    public void deleteByOwnerAndTag(Object owner, String tag) {
         String _owner = serializer.serializeOwner(owner, "");
-        cacheDao().deleteBy(_owner, tag);
+        cacheDao().deleteByOwnerAndTag(_owner, tag);
+        vacuum();
+    }
+
+    @Override
+    public void deleteByOwner(Object owner) {
+        String _owner = serializer.serializeOwner(owner, "");
+        cacheDao().deleteByOwner(_owner);
+        vacuum();
+    }
+
+    @Override
+    public void deleteByTag(String tag) {
+        cacheDao().deleteByTag(tag);
+        vacuum();
+    }
+
+    @Override
+    public void deleteByOwnerAndTagAndKeyNotIn(Object owner, String tag, List<Object> keys) {
+        String _owner = serializer.serializeOwner(owner, "");
+        List<String> _keys = new ArrayList<>();
+        for (Object key : keys) {
+            _keys.add(serializer.serializeKey(key, ""));
+        }
+        cacheDao().deleteByOwnerAndTagAndKeyNotIn(_owner, tag, _keys);
         vacuum();
     }
 
@@ -110,19 +151,5 @@ public abstract class RoomCacheStorage extends RoomDatabase implements CacheStor
         if (cacheDao().insert(entry) == -1) {
             cacheDao().update(entry);
         }
-    }
-
-    public void vacuum() {
-        final SupportSQLiteDatabase _db = super.getOpenHelper().getWritableDatabase();
-        if (!_db.inTransaction()) {
-            _db.execSQL("VACUUM");
-        }
-    }
-
-    @Override
-    public void init(@NonNull DatabaseConfiguration configuration) {
-        super.init(configuration);
-        final SupportSQLiteDatabase _db = super.getOpenHelper().getWritableDatabase();
-        _db.execSQL("PRAGMA auto_vacuum = FULL;");
     }
 }
